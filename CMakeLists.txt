@@ -1,13 +1,38 @@
 cmake_minimum_required(VERSION 3.13)
 project(SPMediaKeyTap)
-add_library(SPMediaKeyTap SPMediaKeyTap.m)
-target_link_libraries(SPMediaKeyTap PUBLIC "-framework AppKit")
-set_target_properties(SPMediaKeyTap PROPERTIES PUBLIC_HEADER SPMediaKeyTap.h)
-install(TARGETS SPMediaKeyTap
-  EXPORT SPMediaKeyTapTargets
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+add_library(${PROJECT_NAME} SPMediaKeyTap.m)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  CMAKE_CXX_STANDARD 17
+  CMAKE_CXX_STANDARD_REQUIRED ON
+  PUBLIC_HEADER SPMediaKeyTap.h
+)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC "-framework AppKit")
+
+install(EXPORT ${PROJECT_NAME}Targets
+  NAMESPACE ${PROJECT_NAME}::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in ${PROJECT_NAME}Config.cmake INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
   FRAMEWORK DESTINATION ${FRAMEWORK_INSTALL_DIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
